@@ -25,6 +25,10 @@ http://programmingexamples.net/wiki/Boost/BGL
 It is important to understand the template parameters for the adjacency_list. For example, do you want a directed or undirected graph? Do you want your graph to contain multiple edges with the same end nodes (i.e. multigraphs)? Performance also comes into play. Boris' book explains some of these, but you will find additional information on using the adjacenty_list here: 
 http://www.boost.org/doc/libs/1_69_0/libs/graph/doc/using_adjacency_list.html
 
+## Understanding Property Maps 
+
+https://www.boost.org/doc/libs/1_48_0/libs/property_map/doc/property_map.html
+
 ## Using Custom Objects for Vertices, Edges, or Graphs
 
 If you want to use custom objects for the vertices, edges, or even the graph itself, then you will want to use bundled properties. The following links will be helpful for using bundled properties: 
@@ -66,3 +70,10 @@ http://www.personal.kent.edu/~rmuhamma/Algorithms/MyAlgorithms/GraphAlgor/strong
 
 boost's strong_components function computes the strongly connected components of a directed graph using Tarjan's algorithm. 
 http://www.boost.org/doc/libs/1_69_0/libs/graph/doc/strong_components.html
+
+
+### Stability Isues
+
+You should be very careful with removing edges/vertexes, especially when vecS is selected as a container.
+These operations often invalidates the pointers including the descriptors.
+https://www.boost.org/doc/libs/1_69_0/libs/graph/doc/adjacency_list.html

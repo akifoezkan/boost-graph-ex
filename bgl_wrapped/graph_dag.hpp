@@ -1,8 +1,8 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_utility.hpp> // print_graph
 #include <boost/graph/graphviz.hpp>
-// Random graph
 #include <random>
+
 
 #include "types.hpp"
 
@@ -66,18 +66,17 @@ class dag
 
         Graph_t g;
 
-
     public:
         Graph_t get_graph(){ return g; }
-        
+
         template <class Vertex>
         boost::adjacency_list<>::vertex_descriptor add_vertex(Vertex v) {
             return boost::add_vertex(v, g);
         }
-        
+
         // we can do the error checking and return edge_descriptor
         std::pair<boost::adjacency_list<>::edge_descriptor, bool> add_edge(
-                boost::adjacency_list<>::vertex_descriptor src, 
+                boost::adjacency_list<>::vertex_descriptor src,
                 boost::adjacency_list<>::vertex_descriptor dst) {
             return boost::add_edge(src, dst, g);
         }
@@ -91,5 +90,31 @@ class dag
                     //make_label_writer(get(&VertexType::name, g)),
                     make_vertex_writer(boost::get(&VertexType::name, g), 
                         boost::get(&VertexType::task, g)));
+        }
+
+        // Random graph for test
+        void gen_rand_graph(unsigned n, unsigned k) {
+            std::random_device rd;
+            std::mt19937 gen(rd());
+             std::uniform_int_distribution<> dis(0, n - 1);
+
+            boost::adjacency_list<>::vertex_descriptor images[n];
+            boost::adjacency_list<>::vertex_descriptor nodes[n];
+
+            for (unsigned v = 0; v < n; v++ ) {
+                auto new_node  = new Node("vertex" + std::to_string(v));
+                auto new_image = new Image("image" + std::to_string(v));
+                nodes[v] = add_vertex(*new_node);
+                images[v] = add_vertex(*new_image);
+            }
+
+            for (unsigned i = 0; i < k; i++ ) {
+                unsigned u = dis(gen); //rand() % n;
+                unsigned v = dis(gen); //rand() % n;
+                if (i % 2)
+                    add_edge(images[u], nodes[v]);
+                else
+                    add_edge(nodes[v], images[v]);
+            }
         }
 };

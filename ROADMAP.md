@@ -77,3 +77,7 @@ http://www.boost.org/doc/libs/1_69_0/libs/graph/doc/strong_components.html
 You should be very careful with removing edges/vertexes, especially when vecS is selected as a container.
 These operations often invalidates the pointers including the descriptors.
 https://www.boost.org/doc/libs/1_69_0/libs/graph/doc/adjacency_list.html
+
+### Other Links
+https://cs.brown.edu/~jwicks/boost/libs/graph/doc/quick_tour.html
+http://blog.hostilefork.com/boost-graph-templates-not-crazy/

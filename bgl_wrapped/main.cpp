@@ -11,8 +11,8 @@ int main()
     Scalar var0("var0"), var1("var1"); 
 
     // Create and fill the graph
-    dag<ParseVertexTypeBase> g;
-    
+    dag<VertexTypeBase> g;
+
     auto im0_v  = g.add_vertex(im0);
     auto var0_v = g.add_vertex(var0);
     auto kern_v = g.add_vertex(kernely);
@@ -21,7 +21,6 @@ int main()
     g.add_edge(im0_v, kern_v);
     g.add_edge(var0_v, kern_v);
     g.add_edge(kern_v, out0_v);
-
 
     std::cout << "graph:" << std::endl;
     g.print_graph();

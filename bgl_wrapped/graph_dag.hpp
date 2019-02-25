@@ -1,7 +1,44 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/graph_utility.hpp> // print_graph
 #include <boost/graph/graphviz.hpp>
-#include <boost/property_map/function_property_map.hpp> //dynmaic properties
+// Random graph
+#include <random>
+
+#include "types.hpp"
+
+// graphviz custom node writer
+template <class NameMap, class TaskMap>
+class vertex_writer {
+public:
+    vertex_writer(NameMap _namem, TaskMap _taskm) : name_m(_namem), task_m(_taskm) {}
+
+    template <class Vertex>
+    void operator()(std::ostream& out, const Vertex& v) const {
+        auto task = task_m[v];
+        out << " [label = " << name_m[v] << ", style = filled, "; 
+        switch (task) {
+            case ParseVertexTask::Computation:
+                out << "shape = circle, fillcolor = orange]";
+        
+                break;
+            case ParseVertexTask::Buffer:
+                out << "shape = box, fillcolor = grey]";
+                break;
+            default: 
+                out << "shape = diamond, fillcolor = red]";;
+                break;
+        }
+    }
+
+private:
+    NameMap name_m;
+    TaskMap task_m;
+};
+
+template <class NameMap, class TaskMap>
+inline vertex_writer<NameMap, TaskMap> make_vertex_writer(NameMap nm, TaskMap tm) {
+    return vertex_writer<NameMap, TaskMap>(nm, tm);
+}
 
 //  boost::adjacency_list<
 //          OutEdgeList, VertexList, Directed, 
@@ -51,6 +88,8 @@ class dag
         void write_graphviz(std::string filename = "out.dot") {
             std::ofstream file_out(filename);
             boost::write_graphviz(file_out, g,
-                    make_label_writer(get(&VertexType::name, g)));
+                    //make_label_writer(get(&VertexType::name, g)),
+                    make_vertex_writer(boost::get(&VertexType::name, g), 
+                        boost::get(&VertexType::task, g)));
         }
 };

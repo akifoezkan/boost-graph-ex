@@ -9,6 +9,7 @@ If you are unfamiliar with graph theory or need a refresher, then take a look at
 http://www.boost.org/doc/libs/1_69_0/libs/graph/doc/graph_theory_review.html
 
 This primer is helpful in understanding the terminology, how data structures represent graphs (adjacency matrix, adjacency list, etc…), and algorithms (breadth-first search, depth-first search, shortest-path, etc…).
+https://medium.com/basecs/spinning-around-in-cycles-with-directed-acyclic-graphs-a233496d4688
 
 ## Sample Code Described in Detail
 

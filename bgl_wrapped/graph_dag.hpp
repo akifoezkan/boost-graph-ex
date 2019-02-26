@@ -1,4 +1,5 @@
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/depth_first_search.hpp> // dfs search
 #include <boost/graph/graph_utility.hpp> // print_graph
 #include <boost/graph/graphviz.hpp>
 #include <random>
@@ -40,6 +41,33 @@ inline vertex_writer<NameMap, TaskMap> make_vertex_writer(NameMap nm, TaskMap tm
     return vertex_writer<NameMap, TaskMap>(nm, tm);
 }
 
+// bsf visitor for cycle detection
+struct cycle_detector_dfs : public boost::dfs_visitor<>
+{
+  cycle_detector_dfs(bool& has_cycle) : m_has_cycle(has_cycle) { }
+
+  template <class Edge, class Graph>
+  void back_edge(Edge, Graph&) { m_has_cycle = true; }
+protected:
+  bool& m_has_cycle;
+};
+
+template<class Edge_t>
+struct cycle_detector : public boost::dfs_visitor<> {
+    cycle_detector(bool& has_cycle_, std::vector<Edge_t>& back_edges_) :
+        has_cycle(has_cycle_), back_edges(back_edges_) { }
+
+    template <class Edge, class Graph>
+    void back_edge(Edge e, Graph&) {
+        has_cycle = true;
+        back_edges.push_back(e);
+    }
+
+protected:
+    bool& has_cycle;
+    std::vector<Edge_t>& back_edges;
+};
+
 //  boost::adjacency_list<
 //          OutEdgeList, VertexList, Directed, 
 //          VertexProperties, EdgeProperties, GraphProperties, EdgeList > 
@@ -54,32 +82,76 @@ inline vertex_writer<NameMap, TaskMap> make_vertex_writer(NameMap nm, TaskMap tm
 //      for the VertexList and/or OutEdgeList template parameters. 
 //  link: https://www.boost.org/doc/libs/1_60_0/libs/graph/doc/adjacency_list.html
 
+#include <cstdarg>
+
 template <class VertexType>
 class dag
 {
     private:
-
         typedef boost::adjacency_list< 
                 boost::listS, boost::vecS, boost::directedS,
                 VertexType>
             Graph_t;
 
+        typedef boost::adjacency_list<> _Grapht;
+
+        typedef _Grapht::edge_descriptor Edge_t;
+
+        // Members
         Graph_t g;
+
+        bool cycle_exist = false;
+
+        std::vector<Edge_t> back_edges;
 
     public:
         Graph_t get_graph(){ return g; }
 
         template <class Vertex>
-        boost::adjacency_list<>::vertex_descriptor add_vertex(Vertex v) {
+        _Grapht::vertex_descriptor add_vertex(Vertex v) {
             return boost::add_vertex(v, g);
         }
 
         // we can do the error checking and return edge_descriptor
-        std::pair<boost::adjacency_list<>::edge_descriptor, bool> add_edge(
-                boost::adjacency_list<>::vertex_descriptor src,
-                boost::adjacency_list<>::vertex_descriptor dst) {
+        std::pair<_Grapht::edge_descriptor, bool> add_edge(
+                _Grapht::vertex_descriptor src,
+                _Grapht::vertex_descriptor dst) {
             return boost::add_edge(src, dst, g);
         }
+
+        bool detect_cycles() {
+            cycle_detector_dfs vis(cycle_exist);
+            depth_first_search(g, visitor(vis));
+
+            if (cycle_exist) {
+                std::cout << "The graph has a cycle " << std::endl;
+            }
+
+            return cycle_exist;
+        }
+
+        bool detect_and_store_cycles() {
+            cycle_detector<Edge_t> vis(cycle_exist, back_edges);
+            depth_first_search(g, visitor(vis));
+            return cycle_exist;
+        }
+
+        void print_edges_at_the_cycles() {
+            std::cout << "Edges at the cycles" << std::endl;
+            for(auto it = begin(back_edges); it != end(back_edges); it++) {
+               std::cout << g[source(*it, g)].name << " --> " << g[target(*it, g)].name << std::endl;
+            }
+            std::cout << "\n\n";
+        }
+
+        bool detect_and_print_cycles() {
+            detect_and_store_cycles();
+            if (cycle_exist)
+                print_edges_at_the_cycles();
+            return cycle_exist;
+        }
+
+        bool has_cycle() { return has_cycle; }
 
         // APIs for print
         void print_graph() { boost::print_graph(g, get(&VertexType::name, g)); };
@@ -98,8 +170,8 @@ class dag
             std::mt19937 gen(rd());
              std::uniform_int_distribution<> dis(0, n - 1);
 
-            boost::adjacency_list<>::vertex_descriptor images[n];
-            boost::adjacency_list<>::vertex_descriptor nodes[n];
+            _Grapht::vertex_descriptor images[n];
+            _Grapht::vertex_descriptor nodes[n];
 
             for (unsigned v = 0; v < n; v++ ) {
                 auto new_node  = new Node("vertex" + std::to_string(v));
@@ -107,6 +179,12 @@ class dag
                 nodes[v] = add_vertex(*new_node);
                 images[v] = add_vertex(*new_image);
             }
+
+            // first and last images are not virtual
+            g[images[0]].virt = false;
+            g[images[n-1]].virt = false;
+            add_edge(images[0], nodes[dis(gen)]);
+            add_edge(nodes[dis(gen)], images[n-1]);
 
             for (unsigned i = 0; i < k; i++ ) {
                 unsigned u = dis(gen); //rand() % n;
@@ -117,4 +195,5 @@ class dag
                     add_edge(nodes[v], images[v]);
             }
         }
+
 };

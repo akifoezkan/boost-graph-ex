@@ -33,6 +33,7 @@ class VertexTypeBase
         std::string name;
         ParseVertexTask task;
         VertexType type;
+        bool virt = true;
 
     public:
         VertexTypeBase() : name(""), task(ParseVertexTask::None) {
@@ -53,6 +54,7 @@ class VertexTypeBase
 
         virtual ~VertexTypeBase() = default;
 
+        bool is_virtual() { return virt; }
 
         VertexType get_type() { return type; };
 

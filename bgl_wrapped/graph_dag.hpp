@@ -4,9 +4,6 @@
 #include <boost/graph/graphviz.hpp>
 #include <random>
 
-
-#include "types.hpp"
-
 // graphviz custom node writer
 template <class NameMap, class TaskMap>
 class vertex_writer {
@@ -130,25 +127,20 @@ class dag
             return cycle_exist;
         }
 
-        bool detect_and_store_cycles() {
+        bool detect_cycles_and_back_edges() {
             cycle_detector<Edge_t> vis(cycle_exist, back_edges);
             depth_first_search(g, visitor(vis));
             return cycle_exist;
         }
 
-        void print_edges_at_the_cycles() {
-            std::cout << "Edges at the cycles" << std::endl;
-            for(auto it = begin(back_edges); it != end(back_edges); it++) {
-               std::cout << g[source(*it, g)].name << " --> " << g[target(*it, g)].name << std::endl;
+        void print_back_edges() {
+            if (cycle_exist) {
+                std::cout << "Edges at the cycles" << std::endl;
+                for(auto it = begin(back_edges); it != end(back_edges); it++) {
+                   std::cout << g[source(*it, g)].name << " --> " << g[target(*it, g)].name << std::endl;
+                }
+                std::cout << "\n";
             }
-            std::cout << "\n\n";
-        }
-
-        bool detect_and_print_cycles() {
-            detect_and_store_cycles();
-            if (cycle_exist)
-                print_edges_at_the_cycles();
-            return cycle_exist;
         }
 
         bool has_cycle() { return has_cycle; }
@@ -195,5 +187,4 @@ class dag
                     add_edge(nodes[v], images[v]);
             }
         }
-
 };

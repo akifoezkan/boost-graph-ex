@@ -1,3 +1,5 @@
+// author: M. Akif Oezkan
+
 #include <iostream>
 #include "types.hpp"
 #include "graph_dag.hpp"
@@ -29,39 +31,12 @@ void ex_graph(Graph_t &g) {
     g.add_edge(var0_v, kernt_v);
 }
 
-dag<VertexTypeBase>* generate_acyclic_graph(){
 
-    dag<VertexTypeBase> *g_ptr;
 
-    bool has_cycle = true;
-    while (has_cycle) {
-        std::cout << "Create a new graph" << std::endl;
-        g_ptr = new dag<VertexTypeBase>();
-        g_ptr->gen_rand_graph(10, 23);
-        has_cycle = g_ptr->detect_cycles();
-        std::cout << std::endl;
-    }
-
-    return g_ptr;
-}
-
-#define GEN_ACYCLIC_GRAPH
-
-// We do not want to have anything related to boost here
 int main() {
     // Create and fill out an example graph
-#ifndef GEN_ACYCLIC_GRAPH
     dag<VertexTypeBase> g;
-
-    g.gen_rand_graph(10, 23);
-    //ex_graph(g);
-
-    //g.detect_cycles();
-    g.detect_and_print_back_edges();
-#else
-    auto g_ptr = generate_acyclic_graph();
-    dag<VertexTypeBase> g = *g_ptr;
-#endif
+    ex_graph(g);
 
     std::cout << "graph:" << std::endl;
     g.print_graph();

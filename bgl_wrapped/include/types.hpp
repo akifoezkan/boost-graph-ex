@@ -9,21 +9,21 @@ enum class VertexType {
     None
 };
 
-enum class ParseVertexTask {
+enum class VertexTask {
    Computation, 
    Buffer,
    None
 };
 
-ParseVertexTask set_task(VertexType type) {
+VertexTask set_task(VertexType type) {
     switch (type) {
         case VertexType::Image:
         case VertexType::Scalar:
-            return ParseVertexTask::Buffer;
+            return VertexTask::Buffer;
         case VertexType::Node:
-            return ParseVertexTask::Computation;
+            return VertexTask::Computation;
         default: 
-            return ParseVertexTask::None;
+            return VertexTask::None;
     }
 }
 
@@ -31,16 +31,16 @@ class VertexTypeBase
 {
     public:
         std::string name;
-        ParseVertexTask task;
+        VertexTask task;
         VertexType type;
         bool virt = true;
 
     public:
-        VertexTypeBase() : name(""), task(ParseVertexTask::None) {
+        VertexTypeBase() : name(""), task(VertexTask::None) {
             task = set_task(type);
         };
 
-        VertexTypeBase(std::string _name) : name(_name), task(ParseVertexTask::None) {
+        VertexTypeBase(std::string _name) : name(_name), task(VertexTask::None) {
             task = set_task(type);
         };
 
@@ -58,7 +58,7 @@ class VertexTypeBase
 
         VertexType get_type() { return type; };
 
-        ParseVertexTask get_task() { return task; };
+        VertexTask get_task() { return task; };
 
         std::string get_name() { return name; };
 

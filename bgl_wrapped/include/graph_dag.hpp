@@ -4,7 +4,11 @@
 #include <boost/graph/graphviz.hpp>
 #include <random>
 
-// graphviz custom node writer
+#include "types.hpp"
+// Vertex { std::string name }
+// VertexTask { std::string name }
+
+// ------------------- graphviz custom node writer ----------------------------
 template <class NameMap, class TaskMap>
 class vertex_writer {
 public:
@@ -15,11 +19,11 @@ public:
         auto task = task_m[v];
         out << " [label = " << name_m[v] << ", style = filled, "; 
         switch (task) {
-            case ParseVertexTask::Computation:
+            case VertexTask::Computation:
                 out << "shape = circle, fillcolor = orange]";
         
                 break;
-            case ParseVertexTask::Buffer:
+            case VertexTask::Buffer:
                 out << "shape = box, fillcolor = grey]";
                 break;
             default: 
@@ -38,7 +42,8 @@ inline vertex_writer<NameMap, TaskMap> make_vertex_writer(NameMap nm, TaskMap tm
     return vertex_writer<NameMap, TaskMap>(nm, tm);
 }
 
-// bsf visitor for cycle detection
+
+// ---------------------- bsf visitors for cycle detection ----------------------
 struct cycle_detector_dfs : public boost::dfs_visitor<>
 {
   cycle_detector_dfs(bool& has_cycle) : m_has_cycle(has_cycle) { }
@@ -49,9 +54,10 @@ protected:
   bool& m_has_cycle;
 };
 
+
 template<class Edge_t>
-struct cycle_detector : public boost::dfs_visitor<> {
-    cycle_detector(bool& has_cycle_, std::vector<Edge_t>& back_edges_) :
+struct cycle_detector_with_backedges_dfs : public boost::dfs_visitor<> {
+    cycle_detector_with_backedges_dfs(bool& has_cycle_, std::vector<Edge_t>& back_edges_) :
         has_cycle(has_cycle_), back_edges(back_edges_) { }
 
     template <class Edge, class Graph>
@@ -65,6 +71,15 @@ protected:
     std::vector<Edge_t>& back_edges;
 };
 
+
+template <class Edge_t>
+inline cycle_detector_with_backedges_dfs<Edge_t> make_cycle_dbe(Edge_t e) {
+    return cycle_detector_with_backedges_dfs<Edge_t>(e);
+}
+
+
+
+// --------------------------- wrapper class -------------------------------
 //  boost::adjacency_list<
 //          OutEdgeList, VertexList, Directed, 
 //          VertexProperties, EdgeProperties, GraphProperties, EdgeList > 
@@ -156,7 +171,7 @@ bool dag<VertexType>::detect_cycles() {
 
 template <class VertexType>
 bool dag<VertexType>::detect_cycles_and_back_edges() {
-    cycle_detector<Edge_t> vis(cycle_exist, back_edges);
+    cycle_detector_with_backedges_dfs<Edge_t> vis(cycle_exist, back_edges);
     depth_first_search(g, visitor(vis));
     return cycle_exist;
 }

@@ -1,8 +1,8 @@
 // author: M. Akif Oezkan
 
 #include <iostream>
-#include "types.hpp"
-#include "graph_dag.hpp"
+#include "include/types.hpp"
+#include "include/graph_dag.hpp"
 
 template<class Graph_t>
 void ex_graph(Graph_t &g) {

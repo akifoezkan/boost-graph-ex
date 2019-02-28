@@ -1,6 +1,6 @@
 #include <iostream>
-#include "types.hpp"
-#include "graph_dag.hpp"
+#include "include/types.hpp"
+#include "include/graph_dag.hpp"
 
 template<class Graph_t>
 void ex_graph(Graph_t &g) {
@@ -53,8 +53,8 @@ int main() {
 #ifndef GEN_ACYCLIC_GRAPH
     dag<VertexTypeBase> g;
 
-    g.gen_rand_graph(10, 23);
     //ex_graph(g);
+    g.gen_rand_graph(10, 23);
 
     //g.detect_cycles();
     g.detect_and_print_back_edges();

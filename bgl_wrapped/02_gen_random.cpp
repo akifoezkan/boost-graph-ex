@@ -1,6 +1,6 @@
 #include <iostream>
-#include "types.hpp"
-#include "graph_dag.hpp"
+#include "include/types.hpp"
+#include "include/graph_dag.hpp"
 
 int main() {
     dag<VertexTypeBase> g;

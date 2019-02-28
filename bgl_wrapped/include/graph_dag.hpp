@@ -92,20 +92,15 @@ class dag
 
         typedef boost::adjacency_list<> _Grapht;
 
+        typedef _Grapht::vertex_descriptor Vertex_t;
+
         typedef _Grapht::edge_descriptor Edge_t;
-
-        // Members
-        Graph_t g;
-
-        bool cycle_exist = false;
-
-        std::vector<Edge_t> back_edges;
 
     public:
         Graph_t get_graph(){ return g; }
 
         template <class Vertex>
-        _Grapht::vertex_descriptor add_vertex(Vertex v) {
+        Vertex_t add_vertex(Vertex v) {
             return boost::add_vertex(v, g);
         }
 
@@ -116,75 +111,118 @@ class dag
             return boost::add_edge(src, dst, g);
         }
 
-        bool detect_cycles() {
-            cycle_detector_dfs vis(cycle_exist);
-            depth_first_search(g, visitor(vis));
+        // APIs for detecting cycles
+        bool detect_cycles();
 
-            if (cycle_exist) {
-                std::cout << "The graph has a cycle " << std::endl;
-            }
+        bool detect_cycles_and_back_edges();
 
-            return cycle_exist;
-        }
+        bool has_cycle();
 
-        bool detect_cycles_and_back_edges() {
-            cycle_detector<Edge_t> vis(cycle_exist, back_edges);
-            depth_first_search(g, visitor(vis));
-            return cycle_exist;
-        }
+        // APIs for printing
+        void print_graph();
 
-        void print_back_edges() {
-            if (cycle_exist) {
-                std::cout << "Edges at the cycles" << std::endl;
-                for(auto it = begin(back_edges); it != end(back_edges); it++) {
-                   std::cout << g[source(*it, g)].name << " --> " << g[target(*it, g)].name << std::endl;
-                }
-                std::cout << "\n";
-            }
-        }
+        void write_graphviz(std::string filename = "out.dot");
 
-        bool has_cycle() { return has_cycle; }
-
-        // APIs for print
-        void print_graph() { boost::print_graph(g, get(&VertexType::name, g)); };
-
-        void write_graphviz(std::string filename = "out.dot") {
-            std::ofstream file_out(filename);
-            boost::write_graphviz(file_out, g,
-                    //make_label_writer(get(&VertexType::name, g)),
-                    make_vertex_writer(boost::get(&VertexType::name, g), 
-                        boost::get(&VertexType::task, g)));
-        }
+        void print_back_edges();
 
         // Random graph for test
-        void gen_rand_graph(unsigned n, unsigned k) {
-            std::random_device rd;
-            std::mt19937 gen(rd());
-             std::uniform_int_distribution<> dis(0, n - 1);
+        void gen_rand_graph(unsigned nvertex, unsigned nedges);
 
-            _Grapht::vertex_descriptor images[n];
-            _Grapht::vertex_descriptor nodes[n];
+    private:
+        Graph_t g;
 
-            for (unsigned v = 0; v < n; v++ ) {
-                auto new_node  = new Node("vertex" + std::to_string(v));
-                auto new_image = new Image("image" + std::to_string(v));
-                nodes[v] = add_vertex(*new_node);
-                images[v] = add_vertex(*new_image);
-            }
+        bool cycle_exist = false;
 
-            // first and last images are not virtual
-            g[images[0]].virt = false;
-            g[images[n-1]].virt = false;
-            add_edge(images[0], nodes[dis(gen)]);
-            add_edge(nodes[dis(gen)], images[n-1]);
-
-            for (unsigned i = 0; i < k; i++ ) {
-                unsigned u = dis(gen); //rand() % n;
-                unsigned v = dis(gen); //rand() % n;
-                if (i % 2)
-                    add_edge(images[u], nodes[v]);
-                else
-                    add_edge(nodes[v], images[v]);
-            }
-        }
+        std::vector<Edge_t> back_edges;
 };
+
+
+// ------------------------- filling out the graph -----------------------------
+
+
+// ------------------ class methods for detecting cycles -----------------------
+template <class VertexType>
+bool dag<VertexType>::detect_cycles() {
+    cycle_detector_dfs vis(cycle_exist);
+    depth_first_search(g, visitor(vis));
+
+    if (cycle_exist) {
+        std::cout << "The graph has a cycle " << std::endl;
+    }
+
+    return cycle_exist;
+}
+
+
+template <class VertexType>
+bool dag<VertexType>::detect_cycles_and_back_edges() {
+    cycle_detector<Edge_t> vis(cycle_exist, back_edges);
+    depth_first_search(g, visitor(vis));
+    return cycle_exist;
+}
+
+
+template <class VertexType>
+bool dag<VertexType>::has_cycle() { return cycle_exist; }
+
+
+// ------------------ class methods for printing -------------------------------
+template <class VertexType>
+void dag<VertexType>::print_graph() {
+    boost::print_graph(g, get(&VertexType::name, g));
+}
+
+
+template <class VertexType>
+void dag<VertexType>::write_graphviz(std::string filename) {
+    std::ofstream file_out(filename);
+    boost::write_graphviz(file_out, g,
+            make_vertex_writer(boost::get(&VertexType::name, g),
+                boost::get(&VertexType::task, g)));
+}
+
+template <class VertexType>
+void dag<VertexType>::print_back_edges() {
+    if (cycle_exist) {
+        std::cout << "Edges at the cycles" << std::endl;
+        for(auto it = begin(back_edges); it != end(back_edges); it++) {
+           std::cout << g[source(*it, g)].name << " --> "
+                     << g[target(*it, g)].name << std::endl;
+        }
+        std::cout << "\n";
+    }
+}
+
+
+// ------------------- random graph generation ---------------------------------
+template <class VertexType>
+void dag<VertexType>::gen_rand_graph(unsigned n, unsigned k) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+     std::uniform_int_distribution<> dis(0, n - 1);
+
+    _Grapht::vertex_descriptor images[n];
+    _Grapht::vertex_descriptor nodes[n];
+
+    for (unsigned v = 0; v < n; v++ ) {
+        auto new_node  = new Node("vertex" + std::to_string(v));
+        auto new_image = new Image("image" + std::to_string(v));
+        nodes[v] = add_vertex(*new_node);
+        images[v] = add_vertex(*new_image);
+    }
+
+    // first and last images are not virtual
+    g[images[0]].virt = false;
+    g[images[n-1]].virt = false;
+    add_edge(images[0], nodes[dis(gen)]);
+    add_edge(nodes[dis(gen)], images[n-1]);
+
+    for (unsigned i = 0; i < k; i++ ) {
+        unsigned u = dis(gen); //rand() % n;
+        unsigned v = dis(gen); //rand() % n;
+        if (i % 2)
+            add_edge(images[u], nodes[v]);
+        else
+            add_edge(nodes[v], images[v]);
+    }
+}

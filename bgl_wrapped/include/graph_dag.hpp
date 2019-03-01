@@ -6,7 +6,7 @@
 
 #include "types.hpp"
 // Vertex { std::string name }
-// VertexTask { std::string name }
+// VertexTypeask { std::string name }
 
 // ------------------- graphviz custom node writer ----------------------------
 template <class NameMap, class TaskMap>
@@ -55,9 +55,9 @@ protected:
 };
 
 
-template<class Edge_t>
+template<class EdgeDesc>
 struct cycle_detector_with_backedges_dfs : public boost::dfs_visitor<> {
-    cycle_detector_with_backedges_dfs(bool& has_cycle_, std::vector<Edge_t>& back_edges_) :
+    cycle_detector_with_backedges_dfs(bool& has_cycle_, std::vector<EdgeDesc>& back_edges_) :
         has_cycle(has_cycle_), back_edges(back_edges_) { }
 
     template <class Edge, class Graph>
@@ -68,13 +68,13 @@ struct cycle_detector_with_backedges_dfs : public boost::dfs_visitor<> {
 
 protected:
     bool& has_cycle;
-    std::vector<Edge_t>& back_edges;
+    std::vector<EdgeDesc>& back_edges;
 };
 
 
-template <class Edge_t>
-inline cycle_detector_with_backedges_dfs<Edge_t> make_cycle_dbe(Edge_t e) {
-    return cycle_detector_with_backedges_dfs<Edge_t>(e);
+template <class EdgeDesc>
+inline cycle_detector_with_backedges_dfs<EdgeDesc> make_cycle_dbe(EdgeDesc e) {
+    return cycle_detector_with_backedges_dfs<EdgeDesc>(e);
 }
 
 
@@ -83,7 +83,7 @@ inline cycle_detector_with_backedges_dfs<Edge_t> make_cycle_dbe(Edge_t e) {
 //  boost::adjacency_list<
 //          OutEdgeList, VertexList, Directed, 
 //          VertexProperties, EdgeProperties, GraphProperties, EdgeList > 
-//      Graph_type;
+//      GraphType;
 //
 //  Stability of Iterator Pointers:
 //      In general, if you want your vertex and edge descriptors to be stable
@@ -103,19 +103,19 @@ class dag
         typedef boost::adjacency_list< 
                 boost::listS, boost::vecS, boost::directedS,
                 VertexType>
-            Graph_t;
+            GraphType;
 
         typedef boost::adjacency_list<> _Grapht;
 
-        typedef _Grapht::vertex_descriptor Vertex_t;
+        typedef _Grapht::vertex_descriptor VertexDesc;
 
-        typedef _Grapht::edge_descriptor Edge_t;
+        typedef _Grapht::edge_descriptor EdgeDesc;
 
     public:
-        Graph_t get_graph(){ return g; }
+        GraphType get_graph(){ return g; }
 
         template <class Vertex>
-        Vertex_t add_vertex(Vertex v) {
+        VertexDesc add_vertex(Vertex v) {
             return boost::add_vertex(v, g);
         }
 
@@ -144,11 +144,11 @@ class dag
         void gen_rand_graph(unsigned nvertex, unsigned nedges);
 
     private:
-        Graph_t g;
+        GraphType g;
 
         bool cycle_exist = false;
 
-        std::vector<Edge_t> back_edges;
+        std::vector<EdgeDesc> back_edges;
 };
 
 
@@ -171,7 +171,7 @@ bool dag<VertexType>::detect_cycles() {
 
 template <class VertexType>
 bool dag<VertexType>::detect_cycles_and_back_edges() {
-    cycle_detector_with_backedges_dfs<Edge_t> vis(cycle_exist, back_edges);
+    cycle_detector_with_backedges_dfs<EdgeDesc> vis(cycle_exist, back_edges);
     depth_first_search(g, visitor(vis));
     return cycle_exist;
 }

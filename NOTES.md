@@ -25,4 +25,6 @@ typedef property<edge_index_t, std::size_t, my_edge> edge_prop;
 typedef adjacency_list<vecS, listS, undirectedS, vertex_prop, edge_prop> Graph;
 typedef subgraph<Graph> Subgraph;
 
-
+filtered vs subgraph
+https://stackoverflow.com/questions/33098559/should-i-use-filtered-graph-or-subgraph-or-something-else
+https://stackoverflow.com/questions/30757833/how-does-boostsubgraph-work-can-we-use-filtered-graph

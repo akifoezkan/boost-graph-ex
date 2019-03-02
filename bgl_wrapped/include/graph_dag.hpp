@@ -1,12 +1,13 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/depth_first_search.hpp> // dfs search
+#include <boost/property_map/property_map.hpp>
 #include <boost/graph/graph_utility.hpp> // print_graph
 #include <boost/graph/graphviz.hpp>
 #include <random>
 
 #include "types.hpp"
 // Vertex { std::string name }
-// VertexTypeask { std::string name }
+// VertexTask { std::string name }
 
 // ------------------- graphviz custom node writer ----------------------------
 template <class NameMap, class TaskMap>
@@ -78,6 +79,23 @@ inline cycle_detector_with_backedges_dfs<EdgeDesc> make_cycle_dbe(EdgeDesc e) {
 }
 
 
+// ---------------------- visitors for filtered graphs ----------------------
+template<class PropMap>
+struct is_buffer
+{
+    is_buffer() {}
+    is_buffer(PropMap cm) : p_map(cm) {}
+
+    template<class VertexOrEdge>
+    bool operator()(const VertexOrEdge& v) const
+    {
+      return p_map[v] == VertexTask::Buffer;
+    }
+
+    private:
+        PropMap p_map;
+};
+
 
 // --------------------------- wrapper class -------------------------------
 //  boost::adjacency_list<
@@ -105,11 +123,23 @@ class dag
                 VertexType>
             GraphType;
 
+        GraphType g;
+
         typedef boost::adjacency_list<> _Grapht;
 
         typedef _Grapht::vertex_descriptor VertexDesc;
 
         typedef _Grapht::edge_descriptor EdgeDesc;
+
+        // filtered graph types
+        // spaces_graph 
+        using sg_prop_map_type = decltype(boost::get(&VertexType::task, g));
+
+        typedef boost::keep_all sg_edge_predicate;
+
+        typedef is_buffer<sg_prop_map_type> sg_vertex_predicate;
+    
+        typedef boost::filtered_graph<GraphType, sg_edge_predicate, sg_vertex_predicate> SgFiltGraphType;
 
     public:
         GraphType get_graph(){ return g; }
@@ -126,14 +156,17 @@ class dag
             return boost::add_edge(src, dst, g);
         }
 
-        // APIs for detecting cycles
+        // detecting cycles
         bool detect_cycles();
 
         bool detect_cycles_and_back_edges();
 
         bool has_cycle();
 
-        // APIs for printing
+        // filtered graphs
+        void get_space_graph();
+
+        // printing the graphs
         void print_graph();
 
         void write_graphviz(std::string filename = "out.dot");
@@ -143,9 +176,9 @@ class dag
         // Random graph for test
         void gen_rand_graph(unsigned nvertex, unsigned nedges);
 
-    private:
-        GraphType g;
+        SgFiltGraphType *spaces_graph;
 
+    private:
         bool cycle_exist = false;
 
         std::vector<EdgeDesc> back_edges;
@@ -153,6 +186,11 @@ class dag
 
 
 // ------------------------- filling out the graph -----------------------------
+// ------------------------- filtering the graph -----------------------------
+template <class VertexType>
+void dag<VertexType>::get_space_graph() {
+    spaces_graph = new SgFiltGraphType(g, sg_edge_predicate(), sg_vertex_predicate(boost::get(&VertexType::task, g)));
+}
 
 
 // ------------------ class methods for detecting cycles -----------------------

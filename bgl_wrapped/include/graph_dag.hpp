@@ -149,6 +149,15 @@ class dag
             return boost::add_vertex(v, g);
         }
 
+        VertexDesc get_vertex(int n) {
+             return boost::vertex(n, g);
+        }
+
+        VertexDesc get_vertex_object(int n) {
+             auto v = get_vertex(n);
+             return g[v];
+        }
+
         // we can do the error checking and return edge_descriptor
         std::pair<_Grapht::edge_descriptor, bool> add_edge(
                 _Grapht::vertex_descriptor src,

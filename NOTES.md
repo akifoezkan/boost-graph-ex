@@ -28,3 +28,7 @@ typedef subgraph<Graph> Subgraph;
 filtered vs subgraph
 https://stackoverflow.com/questions/33098559/should-i-use-filtered-graph-or-subgraph-or-something-else
 https://stackoverflow.com/questions/30757833/how-does-boostsubgraph-work-can-we-use-filtered-graph
+
+
+dictionary of data structures:
+https://xlinux.nist.gov/dads/

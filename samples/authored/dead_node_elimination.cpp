@@ -102,12 +102,12 @@ int main() {
     boost::transpose_graph(g, g_transposed);
 
     // depth first visit from result to the inputs
-    GraphType::vertex_descriptor root_vertex_descriptor = boost::vertex(1, g);
-    mark_as_alive<GraphType> vis(g);
+    GraphType::vertex_descriptor root_vertex_descriptor = boost::vertex(1, g_transposed);
+    mark_as_alive<GraphType> vis(g_transposed);
 
-    std::vector<boost::default_color_type> colors(boost::num_vertices(g));
+    std::vector<boost::default_color_type> colors(boost::num_vertices(g_transposed));
     auto color_map = boost::make_iterator_property_map(colors.begin(), 
-                                boost::get(boost::vertex_index, g));
+                                boost::get(boost::vertex_index, g_transposed));
 
     boost::depth_first_visit(g_transposed, root_vertex_descriptor, 
             vis, 
@@ -118,7 +118,7 @@ int main() {
     using Predicate = std::function<bool(GraphType::vertex_descriptor)>;
     using Filtered  = boost::filtered_graph<GraphType, boost::keep_all, Predicate>;
 
-    auto is_alive = [&g](GraphType::vertex_descriptor vd) { return g[vd].alive; };
+    auto is_alive = [&g_transposed](GraphType::vertex_descriptor vd) { return g_transposed[vd].alive; };
     Filtered g_optimized(g, boost::keep_all{}, is_alive);
    
     // print functions
